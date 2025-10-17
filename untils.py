@@ -89,6 +89,13 @@ class Param(object):
         self.encoder_idcnn_output_size = params.get("lstm_idcnn_output_size", 128)
         self.encoder_idcnn_kernel_size = params.get("lstm_idcnn_kernel_size", 3)
         self.encoder_idcnn_num_blocks = params.get("lstm_idcnn_num_blocks", 4)#重复的block块数
+        self.encoder_rtransformer_rnn_type = params.get("encoder_rtransformer_rnn_type", 'LSTM')
+        self.encoder_rtransformer_n_level = params.get("encoder_rtransformer_num_layers", 2)
+        self.encoder_rtransformer_dropout = params.get("encoder_rtransformer_dropout", 0.1)
+        self.encoder_rtransformer_d_model = params.get("encoder_rtransformer_d_model", 64)
+        self.encoder_rtransformer_ksize = params.get("encoder_rtransformer_ksize", 3)
+        self.encoder_rtransformer_num_LocalRNNLayer = params.get("encoder_rtransformer_num_LocalRNNLayer", 2)
+        self.encoder_rtransformer_num_head = params.get("encoder_rtransformer_num_head", 4)
         self.hidden_encoder_size = params.get("hidden_encoder_size", 128)
         self.hidden_embedding_size = params.get("hidden_embedding_size", 64)#如果是word2vec模型，则需要定义词向量维度
         self.classify_fc_layer = params.get("classify_softmax_layer" , 2)
@@ -118,6 +125,7 @@ class Param(object):
         #学习率调整
         self.lr_step_size = params.get("lr_step_size" , 3)
         self.lr_gamma = params.get("lr_gamma" , 0.1)
+        #设备
 
     def load(self, json_path):
         '''
