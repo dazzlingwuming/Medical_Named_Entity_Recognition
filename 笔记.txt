@@ -21,7 +21,7 @@
        ->Encoder：BILSTM/CNN/Transformer
             考虑点：
 
-                    考虑点	    |B1-LSTM    |ID-CNN	    |Transformer	|R-Transformer
+                    考虑点	    |B1-LSTM    |ID-CNN	    |Transformer	|R-Transformer #结合了RNN和Transformer
                     方向信息	    |高	        |差	        |差	            |中-高 (依赖于RNN部分)
                     相对距离信息	|高	        |差	        |差	            |中-高 (依赖于RNN部分)
                     局部信息	    |差	        |高	        |差	            |高 (由CNN部分保证)
