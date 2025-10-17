@@ -1,0 +1,47 @@
+通用领域：
+    x:seq1--->y:seq2 一一对应
+
+一.数据处理
+    -a数据标签格式 -BIOES
+       a1-疾病类型（开始 ， I-疾病类型 ， O-非实体， E-疾病类型， S-疾病类型
+    -b数据集构造形式
+        -b1 制作x和y对应的字典
+        -b2 因为数据的长度过长，需要进行分片，这里需要注意分片时是否会把实体分开
+    -c Dataloader相关处理
+         c1-以字为单位
+         c2-字向量的初始值可以以char2VEC的形式加载
+         c3-异常值的处理
+二.模型构建
+    -a模型结构
+        [语言模型LM-->将文本转化为向量]+Encoder:特征提取+Classifier:分类器，决策输出
+       ->LM：Embedding/ELMo/BERT/NEZHA
+            LM模型一般不进行训练，直接加载预训练模型：
+                1.冻结参数，直接使用迁移过来的参数
+                2.对这部分参数进行微调，进行很小的学习率训练
+       ->Encoder：BILSTM/CNN/Transformer
+            考虑点：
+
+                    考虑点	    |B1-LSTM    |ID-CNN	    |Transformer	|R-Transformer
+                    方向信息	    |高	        |差	        |差	            |中-高 (依赖于RNN部分)
+                    相对距离信息	|高	        |差	        |差	            |中-高 (依赖于RNN部分)
+                    局部信息	    |差	        |高	        |差	            |高 (由CNN部分保证)
+                    长距离依赖	|中	        |差	        |高	            |高 (由Transformer部分保证)
+                    可并行性(效率)|差	        |高	        |高	            |中 (是混合体，也是权衡)
+
+       ->Classifier:FC/CRF
+    -b模型选择
+       BILSTM-FC-CRF
+       BERT(transformer，attention)-BILSTM-FC-CRF
+
+三.代码说明
+    1.数据处理：
+        -creat_data.py:构建dataloader
+        -dataloard_utils:一些dataloader的工具函数
+     2.模型构建
+        -构建三层：
+            -Embedding层:
+                输入是dataloard的batch[input_ids, input_mask]([N,T])-->输出是[batch_size, seq_len, embedding_dim](N,T,E)
+            -Encoder层
+                输入是Embedding的输出[batch_size, seq_len, embedding_dim](N,T,E)-->输出是[batch_size, seq_len, hidden_size*2](N,T,H)
+            -Classifier层
+                输入是Encoder的输出[batch_size, seq_len, hidden_size*2](N,T,H)-->输出是[batch_size, seq_len, num_labels](N,T,C)
