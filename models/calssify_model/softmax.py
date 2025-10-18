@@ -28,7 +28,7 @@ class SoftmaxModel(CalssifyModel):
             self.fc_layer = nn.Identity()
         else:
             fc_layers = []
-            input_size = self.params.hidden_encoder_size
+            input_size = self.params.config.hidden_size
             for layer in self.params.classify_fc_hidden_size[:-1]:
                 fc_layers.append(OutputFc(self.params, input_size, layer))
                 input_size = layer
