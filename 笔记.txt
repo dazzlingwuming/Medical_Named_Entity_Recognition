@@ -30,8 +30,11 @@
 
        ->Classifier:FC/CRF
     -b模型选择
-       BILSTM-FC-CRF
-       BERT(transformer，attention)-BILSTM-FC-CRF
+       1.基础模型选择word2vec - BILSTM - FC
+       2.进阶：
+             lm：BERT/NEZHA/ALbert
+             encoder:Transformer/R-Transformer
+             classifier:FC/CRF
 
 三.代码说明
     1.数据处理：
