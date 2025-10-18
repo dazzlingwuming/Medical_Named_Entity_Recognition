@@ -51,7 +51,7 @@ class Param(object):
         self.pad_id = params.get("pad_id" , "[PAD]")
         self.data_dir = Path(params.get("data_dir" , self.root_path / "data/json_data"))
         #序列长度
-        self.max_len = config.max_position_embeddings
+        self.max_len = config.max_position_embeddings if config is not None else params.get("max_len" , 128)
         #定义模型相关参数
         self.LM_model_name = params.get("LM_model_name" , "Word2vecLMModel")
         self.encoder_name = params.get("encoder_name" , "BILSTMEncoderModel")
