@@ -159,6 +159,29 @@ def t7():
     #     {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
     #     {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     # ]
-    # print(optimizer_grouped_parameters)
+    # print(optimizer_grouped_parameters)\
+def t8():
+    bert_path = r"C:\Users\lihaodong\.cache\huggingface\hub\models--google-bert--bert-base-chinese\snapshots\8f23c25b06e129b6c986331a13d8d025a92cf0ea\pytorch_model.bin"
+    config = BertConfig.from_pretrained(
+            r"C:\Users\lihaodong\.cache\huggingface\hub\models--google-bert--bert-base-chinese\snapshots\8f23c25b06e129b6c986331a13d8d025a92cf0ea\config.json")
+    params = Param(
+        config=config,
+        params={
+            "LM_model_name": "BertLMModel",
+            "bert_model_dir": bert_path,
+            "encoder_name": "RTransformerEncoder",
+            "encoder_rtransformer_d_model":config.hidden_size,
+        }
+    )
+    model = NerModel(params).cuda()
+    print(model)
+    input_ids = torch.tensor([[1, 2, 3], [4, 5, 6]]).cuda()
+    input_mask = torch.tensor([[1, 1, 1], [1, 1, 0]]).cuda()
+    labels = torch.tensor([[1, 2, 3], [4, 5, 6]]).cuda()
+    output = model(input_ids, input_mask, labels=labels)
+    print(output)
+
+
+
 if __name__ == '__main__':
-    t7()
+    t8()
