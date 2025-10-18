@@ -87,7 +87,7 @@ class MHPooling(nn.Module):
         # We assume d_v always equals d_k
         self.d_k = d_model // h
         self.h = h
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
+        self.linears = clones(nn.Linear(d_model, d_model), 4)#q,k,v,output
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
 
@@ -105,11 +105,16 @@ class MHPooling(nn.Module):
         nbatches, seq_len, d_model = x.shape
 
         # 1) Do all the linear projections in batch from d_model => h x d_k
+        #多头注意力机制的qkv线性变换，取self.linears中的前三个线性层作为qkv的线性变换
         query, key, value = \
             [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
              for l, x in zip(self.linears, (x, x, x))]
 
         # 2) Apply attention on all the projected vectors in batch.
+        '''
+        x：注意力机制的输出，形状为 (nbatches, h, seq_len, d_k)。
+        self.attn：注意力权重，形状为 (nbatches, h, seq_len, seq_len)。
+        '''
         x, self.attn = attention(query, key, value, mask=self.mask[:, :, :seq_len, :seq_len],
                                  dropout=self.dropout)
 
@@ -147,15 +152,23 @@ class LocalRNN(nn.Module):
     def forward(self, x):
         nbatches, l, input_dim = x.shape
         x = self.get_K(x)  # b x seq_len x ksize x d_model
+        #这里是控制序列长度的，用于加快计算速度
         batch, l, ksize, d_model = x.shape
+        #获取局部窗口后，送入RNN，然后再reshape回来
         h = self.rnn(x.view(-1, self.ksize, d_model))[0][:, -1, :]
         return h.view(batch, l, d_model)
 
     def get_K(self, x):
+        '''
+        这里是为了加速而设计的局部窗口获取函数，具体思路是先在序列前面补ksize-1个0向量，然后通过index_select函数快速获取局部窗口
+        :param x:
+        :return:
+        '''
         batch_size, l, d_model = x.shape
         zeros = self.zeros.unsqueeze(0).repeat(batch_size, 1, 1)
         x = torch.cat((zeros, x), dim=1)
         key = torch.index_select(x, 1, self.select_index[:self.ksize * l])
+        # 重新reshape，获取到局部窗口
         key = key.reshape(batch_size, l, self.ksize, -1)
         return key
 
@@ -189,9 +202,12 @@ class Block(nn.Module):
 
     def forward(self, x):
         n, l, d = x.shape
+        #local rnn --> 利用局部RNN提取局部特征
         for i, layer in enumerate(self.layers):
             x = layer(x)
+        #global pooling + feed forward --> 利用多头池化提取全局特征
         x = self.connections[0](x, self.pooling)
+        # feed forward
         x = self.connections[1](x, self.feed_forward)
         return x
 
