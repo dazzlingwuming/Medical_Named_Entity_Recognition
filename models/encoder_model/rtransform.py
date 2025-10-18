@@ -3,9 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math, copy, time
 import numpy as np
-from ...untils import Param
+from transformers import BertConfig
 
 from models.encoder_model import EncoderModel
+from untils import Param
 
 
 def clones(module, N):
@@ -242,7 +243,7 @@ class RTransformerEncoder(EncoderModel):
             d_model=self.params.encoder_rtransformer_d_model,
             rnn_type=self.params.encoder_rtransformer_rnn_type,
             ksize=self.params.encoder_rtransformer_ksize,
-            n_level=self.encoder_rtransformer_n_level,
+            n_level=self.params.encoder_rtransformer_n_level,
             n=self.params.encoder_rtransformer_num_LocalRNNLayer,
             h=self.params.encoder_rtransformer_num_head,
             dropout=self.params.encoder_rtransformer_dropout,
@@ -266,9 +267,10 @@ class RTransformerEncoder(EncoderModel):
 
 if __name__ == '__main__':
     # 测试 RTransformerEncoder
-
-    params = Param()
+    config = BertConfig.from_pretrained(r'D:\github\Medical_Named_Entity_Recognition\pre_train_model\bert\config.json')
+    params = Param(config = config)
     encoder = RTransformerEncoder(params)
+    encoder.eval().cuda()
     # encoder = RTransformer(
     #         d_model=params.config.hidden_encoder_size,
     #         rnn_type='LSTM',
@@ -283,9 +285,9 @@ if __name__ == '__main__':
 
 
     # 生成模拟输入
-    input_feature = torch.rand(2, 10, 64)  # 形状：(批次大小, 序列长度, 特征维度)
-    input_mask = torch.randint(0, 2, (2, 10))  # 随机掩码（0表示填充，1表示有效）
+    input_feature = torch.rand(2, 10, 64).cuda()  # 形状：(批次大小, 序列长度, 特征维度)
+    input_mask = torch.randint(0, 2, (2, 10)).cuda()  # 随机掩码（0表示填充，1表示有效）
 
     # 前向传播
-    output = encoder(input_feature)
+    output = encoder(input_feature,input_mask)
     print("RTransformer Encoder 输出形状：", output.shape)  # 应为 (2, 10, 128)
